@@ -10,8 +10,8 @@ export default defineConfig({
   base: './',
   server: {
     open: true,
-    host: '127.0.0.1',
-    port: 1904,
+    host: 'localhost',
+    port: 5174,
   },
   resolve: {
     alias: {
