@@ -7,11 +7,15 @@
   padding: 0;
   box-sizing: border-box;
 
-  font-family: 'Outfit', serif;
+  font-family: 'Montserrat', serif;
 }
 
 body {
   @apply text-white overflow-hidden select-none;
+}
+
+*:focus {
+  outline: none;
 }
 
 .stopColorPrimaryColor {
@@ -32,12 +36,12 @@ body {
 ::-webkit-scrollbar {
   border-radius: 0.0625rem;
   background: rgba(255, 255, 255, 0.08);
-  width: 1px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   border-radius: 0.8625rem;
-  background: linear-gradient(90deg, #DC095E 0%, #760532 100%);
+  background: white;
 }
 
 .hideScrollbar::-webkit-scrollbar {

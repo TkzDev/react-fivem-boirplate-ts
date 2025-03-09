@@ -5,8 +5,9 @@ import '@views/styles/index.css';
 
 import { isEnvBrowser } from '@app/utils/misc';
 
-import { App } from './app';
+import { Notifier } from '@views/components/Notify/Notify';
 import { BrowserRouter } from 'react-router-dom';
+import { App } from './app';
 
 if (isEnvBrowser()) {
   const body = document.getElementById('root');
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />
+      <Notifier />
     </BrowserRouter>
   </React.StrictMode>,
 );

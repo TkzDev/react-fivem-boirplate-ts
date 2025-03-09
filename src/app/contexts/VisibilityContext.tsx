@@ -1,95 +1,50 @@
-import {
+import React, {
+  Context,
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from 'react'
+import { isEnvBrowser } from '../utils/misc'
+import { useNuiMessage } from '../hooks/useNuiMessage'
+import { useNuiCallback } from '../hooks/useNuiCallback'
+import { useNavigate } from 'react-router-dom'
+interface VisibilityProviderValue { }
 
-import { useNuiCallback } from '@app/hooks/useNuiCallback';
-import { useNuiMessage } from '@app/hooks/useNuiMessage';
-import { isEnvBrowser } from '@app/utils/misc';
+const VisibilityContext = createContext<VisibilityProviderValue | null>(null)
 
-type VisibilityProviderProps = {
-  children: React.ReactNode;
-};
-
-type VisibilityProviderState = {
-  visible: boolean;
-  setVisible: (newVisibility: boolean) => void;
-
-  canCloseUi: boolean;
-  setCanCloseUi: (newStatus: boolean) => void;
-
-  fetchHideFrame: () => Promise<void>;
-};
-
-const VisibilityProviderContext = createContext<VisibilityProviderState>({
-  visible: false,
-  setVisible: () => {},
-
-  canCloseUi: false,
-  setCanCloseUi: () => {},
-
-  fetchHideFrame: async () => {},
-});
-
-export function VisibilityProvider({ children }: VisibilityProviderProps) {
-  const [visible, setVisible] = useState<boolean>(isEnvBrowser());
-  const [canCloseUi, setCanCloseUi] = useState(true);
-
-  const fetchHideFrame = useCallback(async () => {
-    if (!visible) return;
-
-    const resp = await useNuiCallback('hideFrame', {}, true);
-
-    if (resp) {
-      setVisible(false);
-    }
-  }, [visible]);
+export const VisibilityProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [visible, setVisible] = useState(isEnvBrowser())
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const listener = (event: KeyboardEvent) => {
-      if (!canCloseUi) return;
-
-      if (event.key === 'Escape') {
-        fetchHideFrame();
+    if (!visible) return navigate('*')
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (!isEnvBrowser()) useNuiCallback('hideFrame')
+        else setVisible(!visible), navigate('*')
       }
-    };
-
-    if (visible) {
-      window.addEventListener('keydown', listener);
     }
 
-    if (!visible) {
-      window.removeEventListener('keydown', listener);
-    }
-  }, [canCloseUi, visible, fetchHideFrame]);
+    window.addEventListener('keydown', keyHandler)
+    return () => window.removeEventListener('keydown', keyHandler)
+  }, [visible])
 
-  useNuiMessage<boolean>('setVisible', setVisible);
+  useNuiMessage('setVisible', (data: any) => {
+    setVisible(data.visible)
+    navigate(data.path)
+  });
 
   return (
-    <VisibilityProviderContext.Provider
-      value={{
-        visible,
-        setVisible,
-
-        canCloseUi,
-        setCanCloseUi,
-
-        fetchHideFrame,
-      }}
-    >
-      {children}
-    </VisibilityProviderContext.Provider>
-  );
+    <VisibilityContext.Provider value={{}}>
+      {visible && children}
+    </VisibilityContext.Provider>
+  )
 }
 
-export const useVisibility = () => {
-  const context = useContext(VisibilityProviderContext);
-
-  if (context === undefined)
-    throw new Error('useVisibility must be used within a VisibilityProvider');
-
-  return context;
-};
+export const useVisibility = () =>
+  useContext<VisibilityProviderValue>(
+    VisibilityContext as Context<VisibilityProviderValue>,
+  )

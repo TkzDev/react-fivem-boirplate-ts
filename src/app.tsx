@@ -1,32 +1,27 @@
-import { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import {
-  useVisibility,
-  VisibilityProvider,
-} from '@app/contexts/VisibilityContext';
-import { useNuiCallback } from '@app/hooks/useNuiCallback';
-import { ColorVariants, attributeColorsToHTML } from '@app/utils/colors';
+import { VisibilityProvider } from '@app/contexts/VisibilityContext';
+import { isEnvBrowser } from '@app/utils/misc';
+import { Home } from '@views/pages/home';
+import clsx from 'clsx';
+import { Route, Routes } from 'react-router-dom';
 
 export function App() {
-  const { visible } = useVisibility();
-
-  useEffect(() => {
-    if (!visible) return;
-
-    (async () => {
-      const resp = await useNuiCallback<
-        | { primaryColor: string; secondaryColor: string; thirdyColor: string }
-        | keyof typeof ColorVariants
-      >('getColors', {}, 'GALORYS');
-
-      attributeColorsToHTML(resp);
-    })();
-  }, [visible]);
-
   return (
     <VisibilityProvider>
-      <div className="w-screen h-screen flex justify-center items-center absolute left-0 top-0 z-[2]">
-        <Routes></Routes>
+      <div
+        className={clsx(
+          'w-screen h-screen grid place-items-center transition-opacity',
+          isEnvBrowser() && 'bg-zinc-700',
+        )}
+      >
+        <div
+          className="max-[1600px]:scale-75 transition-all duration-[5.4s] ease-in-out"
+        >
+          <Routes>
+            <Route path="/home" element={<Home />} />
+            <Route path="*" element={<Home />} />
+
+          </Routes>
+        </div>
       </div>
     </VisibilityProvider>
   );
